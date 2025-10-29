@@ -639,6 +639,34 @@
             }
         }
 
+        // Send confirmation email to employee when they submit request
+        async function sendEmployeeConfirmation(employeeEmail, employeeName, requestDetails) {
+            try {
+                const templateParams = {
+                    employee_email: employeeEmail,
+                    employee_name: employeeName,
+                    request_type: requestDetails.type === 'vacation' ? 'Vacation' : 'Sick Leave',
+                    start_date: formatDate(requestDetails.startDate),
+                    end_date: formatDate(requestDetails.endDate),
+                    days_requested: requestDetails.days,
+                    status_text: 'SUBMITTED',
+                    status_message: 'Your request has been submitted and is pending approval. You will receive another email once your request has been reviewed.'
+                };
+
+                const response = await emailjs.send(
+                    EMAILJS_SERVICE_ID,
+                    EMAILJS_EMPLOYEE_TEMPLATE_ID,
+                    templateParams
+                );
+                
+                console.log('Employee confirmation email sent successfully:', response);
+                return true;
+            } catch (error) {
+                console.error('Error sending employee confirmation:', error);
+                return false;
+            }
+        }
+
         // Save data to localStorage
         function saveData() {
             localStorage.setItem('timeOffUsers', JSON.stringify(users));
@@ -933,13 +961,16 @@
             // Send email notification to admin
             await sendAdminNotification(currentUser.name, currentUser.email, currentUser.locationId, newRequest);
             
+            // Send confirmation email to employee
+            await sendEmployeeConfirmation(currentUser.email, currentUser.name, newRequest);
+            
             // Clear form
             document.getElementById('requestStartDate').value = '';
             document.getElementById('requestEndDate').value = '';
             document.getElementById('requestType').value = '';
             document.getElementById('requestNotes').value = '';
             
-            alert('Request submitted successfully! Admin has been notified via email.');
+            alert('Request submitted successfully! You and the admin have been notified via email.');
             showEmployeeDashboard();
         }
 
@@ -1095,5 +1126,6 @@
     </script>
 </body>
 </html>
+
 
 
