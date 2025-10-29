@@ -506,9 +506,9 @@
     <script>
         // AUTHORIZED ADMIN EMAILS - Only these emails can register as admin
         const AUTHORIZED_ADMIN_EMAILS = [
-            'iggy.reemo@gmail.com',
-            'sf367y@gmail.com',
-            '0670mike@gmail.com'
+            'admin@reemo.com',
+            'hr@reemo.com',
+            'manager@reemo.com'
             // Add more authorized admin emails here
         ];
 
@@ -557,6 +557,15 @@
             }
         ];
 
+        // Format date from YYYY-MM-DD to MM/DD/YYYY
+        function formatDate(dateString) {
+            const date = new Date(dateString + 'T00:00:00');
+            const month = (date.getMonth() + 1).toString().padStart(2, '0');
+            const day = date.getDate().toString().padStart(2, '0');
+            const year = date.getFullYear();
+            return `${month}/${day}/${year}`;
+        }
+
         // Save data to localStorage
         function saveData() {
             localStorage.setItem('timeOffUsers', JSON.stringify(users));
@@ -568,19 +577,38 @@
             const hire = new Date(hireDate);
             const now = new Date();
             const currentYear = now.getFullYear();
-            const yearStart = new Date(currentYear, 0, 1);
+            const yearStart = new Date(currentYear, 0, 1); // January 1st of current year
             
-            // If hired this year, calculate from hire date
-            const startDate = hire > yearStart ? hire : yearStart;
+            // Everyone resets on January 1st
+            let startDate;
             
-            // Calculate complete months from start date to now
-            let monthsWorked = (now.getFullYear() - startDate.getFullYear()) * 12;
-            monthsWorked += now.getMonth() - startDate.getMonth();
+            // If hired this year, start counting from hire date
+            // If hired before this year, start counting from January 1st
+            if (hire.getFullYear() === currentYear) {
+                startDate = hire;
+            } else {
+                startDate = yearStart;
+            }
             
-            // Each month earns 1 day of vacation and 1 day of sick leave
-            // Maximum is 5 days per year
-            const vacationDays = Math.min(monthsWorked * 1, 5);
-            const sickDays = Math.min(monthsWorked * 1, 5);
+            // Calculate COMPLETE months from start date to now
+            // Days only accrue at the END of each month
+            let monthsCompleted = 0;
+            
+            let tempDate = new Date(startDate);
+            
+            // Move to the end of the hire/start month
+            let checkDate = new Date(tempDate.getFullYear(), tempDate.getMonth() + 1, 0); // Last day of start month
+            
+            while (checkDate < now) {
+                monthsCompleted++;
+                // Move to end of next month
+                checkDate = new Date(checkDate.getFullYear(), checkDate.getMonth() + 2, 0);
+            }
+            
+            // Each completed month earns 1 vacation day and 1 sick day
+            // Maximum is 5 days per year (earned by end of May)
+            const vacationDays = Math.min(monthsCompleted, 5);
+            const sickDays = Math.min(monthsCompleted, 5);
             
             return { vacationDays, sickDays };
         }
@@ -876,7 +904,7 @@
             // Update employee info
             document.getElementById('employeeName').textContent = `Welcome, ${currentUser.name}`;
             document.getElementById('employeeDetails').textContent = 
-                `Location: ${currentUser.locationId} | ${currentUser.employmentType === 'fulltime' ? 'Full-Time' : 'Part-Time'} | Hired: ${currentUser.hireDate}`;
+                `Location: ${currentUser.locationId} | ${currentUser.employmentType === 'fulltime' ? 'Full-Time' : 'Part-Time'} | Hired: ${formatDate(currentUser.hireDate)}`;
             
             // Update balance - show only days
             document.getElementById('vacationDays').textContent = currentUser.vacationDays;
@@ -891,8 +919,8 @@
             } else {
                 tbody.innerHTML = userRequests.map(r => {
                     const dateRange = r.startDate === r.endDate 
-                        ? r.startDate 
-                        : `${r.startDate} to ${r.endDate}`;
+                        ? formatDate(r.startDate)
+                        : `${formatDate(r.startDate)} to ${formatDate(r.endDate)}`;
                     return `
                         <tr>
                             <td>${dateRange}</td>
@@ -930,8 +958,8 @@
                 tbody.innerHTML = requests.map(r => {
                     const user = users.find(u => u.id === r.userId);
                     const dateRange = r.startDate === r.endDate 
-                        ? r.startDate 
-                        : `${r.startDate} to ${r.endDate}`;
+                        ? formatDate(r.startDate)
+                        : `${formatDate(r.startDate)} to ${formatDate(r.endDate)}`;
                     return `
                         <tr>
                             <td><span class="employee-name">${user.name}</span></td>
