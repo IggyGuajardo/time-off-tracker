@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Time Off Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #7fc8ed 0%, #5ba3d0 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            width: 100%;
+            max-width: 1200px;
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #7fc8ed 0%, #5ba3d0 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .header img {
+            max-width: 200px;
+            height: auto;
+            margin-bottom: 20px;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .login-form, .dashboard {
+            display: none;
+        }
+
+        .login-form.active, .dashboard.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #7fc8ed;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #7fc8ed 0%, #5ba3d0 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-weight: 600;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(127, 200, 237, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            margin-left: 10px;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            padding: 8px 15px;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+
+        .btn-deny {
+            background: #dc3545;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .balance-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, #7fc8ed 0%, #5ba3d0 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .balance-card h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            opacity: 0.9;
+        }
+
+        .balance-card .days {
+            font-size: 48px;
+            font-weight: bold;
+        }
+
+        .balance-card .label {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+
+        .request-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .request-table th {
+            background: #f8f9fa;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #333;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .request-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .request-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status {
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-denied {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .section {
+            margin-bottom: 40px;
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+            color: #333;
+            border-bottom: 3px solid #7fc8ed;
+            padding-bottom: 10px;
+        }
+
+        .user-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .logout-btn {
+            float: right;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 2px solid #e0e0e0;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .stat-card .number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #7fc8ed;
+        }
+
+        .stat-card .label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .employee-name {
+            font-weight: 600;
+            color: #5ba3d0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin: 10px;
+            }
+
+            .balance-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .request-table {
+                font-size: 12px;
+            }
+
+            .request-table th, .request-table td {
+                padding: 10px 5px;
+            }
+
+            button {
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            .logout-btn {
+                float: none;
+                display: block;
+                margin-bottom: 10px;
+            }
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 style="font-size: 3em; margin-bottom: 5px; letter-spacing: 2px;">REEMO</h1>
+            <h2 style="font-size: 1.5em; margin-bottom: 10px; font-weight: 400;">Time Off Tracker</h2>
+            <p>Manage Vacation and Sick Leave</p>
+        </div>
+        
+        <div class="content">
+            <!-- Login Form -->
+            <div id="loginForm" class="login-form active">
+                <h2 style="margin-bottom: 20px; color: #333;">Login</h2>
+                <div class="form-group">
+                    <label for="loginEmail">Email</label>
+                    <input type="email" id="loginEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                </div>
+                <button onclick="login()">Login</button>
+                <button class="btn-secondary" onclick="showRegisterForm()">New Employee? Register</button>
+                <div style="margin-top: 15px; text-align: center;">
+                    <a href="#" onclick="showForgotPasswordForm(); return false;" style="color: #5ba3d0; text-decoration: none; font-weight: 600;">Forgot Password?</a>
+                </div>
+                
+                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 5px;">
+                    <h4 style="margin-bottom: 10px;">Demo Accounts:</h4>
+                    <p><strong>Admin:</strong> admin@company.com / admin123</p>
+                    <p><strong>Employee:</strong> john@company.com / john123</p>
+                </div>
+            </div>
+
+            <!-- Registration Form -->
+            <div id="registerForm" class="login-form">
+                <h2 style="margin-bottom: 20px; color: #333;">Employee Registration</h2>
+                <div class="form-group">
+                    <label for="regName">Full Name</label>
+                    <input type="text" id="regName" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmail">Email</label>
+                    <input type="email" id="regEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="regPassword">Password</label>
+                    <input type="password" id="regPassword" placeholder="Create a password" required>
+                </div>
+                <div class="form-group">
+                    <label for="regLocation">Location ID</label>
+                    <input type="text" id="regLocation" placeholder="Enter your location ID" required>
+                </div>
+                <div class="form-group">
+                    <label for="regEmploymentType">Employment Type</label>
+                    <select id="regEmploymentType" required>
+                        <option value="">Select type</option>
+                        <option value="fulltime">Full-Time</option>
+                        <option value="parttime">Part-Time</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="regHireDate">Hire Date</label>
+                    <input type="date" id="regHireDate" required>
+                </div>
+                <button onclick="register()">Register</button>
+                <button class="btn-secondary" onclick="showLoginForm()">Back to Login</button>
+            </div>
+
+            <!-- Forgot Password Form -->
+            <div id="forgotPasswordForm" class="login-form">
+                <h2 style="margin-bottom: 20px; color: #333;">Reset Password</h2>
+                <p style="margin-bottom: 20px; color: #666;">Enter your email address and we'll help you reset your password.</p>
+                <div class="form-group">
+                    <label for="forgotEmail">Email</label>
+                    <input type="email" id="forgotEmail" placeholder="Enter your email" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" placeholder="Enter new password" required>
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" placeholder="Confirm new password" required>
+                </div>
+                <button onclick="resetPassword()">Reset Password</button>
+                <button class="btn-secondary" onclick="showLoginForm()">Back to Login</button>
+            </div>
+
+            <!-- Employee Dashboard -->
+            <div id="employeeDashboard" class="dashboard">
+                <div class="user-info">
+                    <button class="logout-btn btn-secondary" onclick="logout()">Logout</button>
+                    <h3 id="employeeName">Welcome</h3>
+                    <p id="employeeDetails"></p>
+                </div>
+
+                <div class="balance-cards">
+                    <div class="balance-card">
+                        <h3>Vacation Balance</h3>
+                        <div class="days" id="vacationDays">0</div>
+                        <div class="label">days remaining</div>
+                    </div>
+                    <div class="balance-card">
+                        <h3>Sick Leave Balance</h3>
+                        <div class="days" id="sickDays">0</div>
+                        <div class="label">days remaining</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>Request Time Off</h2>
+                    <div class="form-group">
+                        <label for="requestStartDate">Start Date</label>
+                        <input type="date" id="requestStartDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="requestEndDate">End Date</label>
+                        <input type="date" id="requestEndDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="requestType">Type</label>
+                        <select id="requestType" required>
+                            <option value="">Select type</option>
+                            <option value="vacation">Vacation</option>
+                            <option value="sick">Sick Leave</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="requestNotes">Notes</label>
+                        <textarea id="requestNotes" placeholder="Optional notes about your request"></textarea>
+                    </div>
+                    <button onclick="submitRequest()">Submit Request</button>
+                </div>
+
+                <div class="section">
+                    <h2>My Requests</h2>
+                    <table class="request-table" id="employeeRequestsTable">
+                        <thead>
+                            <tr>
+                                <th>Dates</th>
+                                <th>Type</th>
+                                <th>Days</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody id="employeeRequestsBody">
+                            <tr><td colspan="5" style="text-align: center; padding: 40px;">No requests yet</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Admin Dashboard -->
+            <div id="adminDashboard" class="dashboard">
+                <div class="user-info">
+                    <button class="logout-btn btn-secondary" onclick="logout()">Logout</button>
+                    <h3>Admin Dashboard</h3>
+                    <p>Manage all time-off requests</p>
+                </div>
+
+                <div class="admin-stats">
+                    <div class="stat-card">
+                        <div class="number" id="totalEmployees">0</div>
+                        <div class="label">Total Employees</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="pendingRequests">0</div>
+                        <div class="label">Pending Requests</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="number" id="approvedToday">0</div>
+                        <div class="label">Approved Today</div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <h2>All Time Off Requests</h2>
+                    <table class="request-table" id="adminRequestsTable">
+                        <thead>
+                            <tr>
+                                <th>Employee</th>
+                                <th>Location</th>
+                                <th>Dates</th>
+                                <th>Type</th>
+                                <th>Days</th>
+                                <th>Status</th>
+                                <th>Notes</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminRequestsBody">
+                            <tr><td colspan="8" style="text-align: center; padding: 40px;">No requests yet</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize data structure
+        let currentUser = null;
+        
+        // Load data from localStorage or initialize
+        let users = JSON.parse(localStorage.getItem('timeOffUsers')) || [
+            {
+                id: 1,
+                name: 'Admin User',
+                email: 'admin@company.com',
+                password: 'admin123',
+                role: 'admin',
+                locationId: 'HQ-001',
+                employmentType: 'fulltime',
+                hireDate: '2020-01-01',
+                vacationDays: 0,
+                sickDays: 0
+            },
+            {
+                id: 2,
+                name: 'John Doe',
+                email: 'john@company.com',
+                password: 'john123',
+                role: 'employee',
+                locationId: 'LOC-001',
+                employmentType: 'fulltime',
+                hireDate: '2023-03-15',
+                vacationDays: 5,
+                sickDays: 5
+            }
+        ];
+
+        let requests = JSON.parse(localStorage.getItem('timeOffRequests')) || [
+            {
+                id: 1,
+                userId: 2,
+                startDate: '2025-11-15',
+                endDate: '2025-11-15',
+                type: 'vacation',
+                days: 1,
+                status: 'pending',
+                notes: 'Family vacation',
+                submittedDate: '2025-10-28'
+            }
+        ];
+
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem('timeOffUsers', JSON.stringify(users));
+            localStorage.setItem('timeOffRequests', JSON.stringify(requests));
+        }
+
+        // Calculate accrued days based on hire date
+        function calculateAccruedDays(hireDate) {
+            const hire = new Date(hireDate);
+            const now = new Date();
+            const currentYear = now.getFullYear();
+            const yearStart = new Date(currentYear, 0, 1);
+            
+            // If hired this year, calculate from hire date
+            const startDate = hire > yearStart ? hire : yearStart;
+            
+            // Calculate complete months from start date to now
+            let monthsWorked = (now.getFullYear() - startDate.getFullYear()) * 12;
+            monthsWorked += now.getMonth() - startDate.getMonth();
+            
+            // Each month earns 1 day of vacation and 1 day of sick leave
+            // Maximum is 5 days per year
+            const vacationDays = Math.min(monthsWorked * 1, 5);
+            const sickDays = Math.min(monthsWorked * 1, 5);
+            
+            return { vacationDays, sickDays };
+        }
+
+        // Update all employees' accrued days
+        function updateAllAccruedDays() {
+            users.forEach(user => {
+                if (user.role === 'employee') {
+                    const { vacationDays, sickDays } = calculateAccruedDays(user.hireDate);
+                    
+                    // Calculate used days
+                    const approvedRequests = requests.filter(r => 
+                        r.userId === user.id && r.status === 'approved'
+                    );
+                    
+                    const usedVacation = approvedRequests
+                        .filter(r => r.type === 'vacation')
+                        .reduce((sum, r) => sum + r.days, 0);
+                    
+                    const usedSick = approvedRequests
+                        .filter(r => r.type === 'sick')
+                        .reduce((sum, r) => sum + r.days, 0);
+                    
+                    // Update available days
+                    user.vacationDays = Math.max(0, vacationDays - usedVacation);
+                    user.sickDays = Math.max(0, sickDays - usedSick);
+                }
+            });
+            saveData();
+        }
+
+        // Login
+        function login() {
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            const user = users.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                currentUser = user;
+                updateAllAccruedDays();
+                
+                if (user.role === 'admin') {
+                    showAdminDashboard();
+                } else {
+                    showEmployeeDashboard();
+                }
+            } else {
+                alert('Invalid email or password');
+            }
+        }
+
+        // Register
+        function register() {
+            const name = document.getElementById('regName').value;
+            const email = document.getElementById('regEmail').value;
+            const password = document.getElementById('regPassword').value;
+            const locationId = document.getElementById('regLocation').value;
+            const employmentType = document.getElementById('regEmploymentType').value;
+            const hireDate = document.getElementById('regHireDate').value;
+            
+            if (!name || !email || !password || !locationId || !employmentType || !hireDate) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            // Check if email already exists
+            if (users.find(u => u.email === email)) {
+                alert('Email already registered');
+                return;
+            }
+            
+            const { vacationDays, sickDays } = calculateAccruedDays(hireDate);
+            
+            const newUser = {
+                id: users.length + 1,
+                name,
+                email,
+                password,
+                role: 'employee',
+                locationId,
+                employmentType,
+                hireDate,
+                vacationDays,
+                sickDays
+            };
+            
+            users.push(newUser);
+            saveData();
+            
+            alert('Registration successful! You can now login.');
+            showLoginForm();
+        }
+
+        // Reset Password
+        function resetPassword() {
+            const email = document.getElementById('forgotEmail').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (!email || !newPassword || !confirmPassword) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match');
+                return;
+            }
+            
+            // Find user by email
+            const user = users.find(u => u.email === email);
+            
+            if (!user) {
+                alert('No account found with that email address');
+                return;
+            }
+            
+            // Update password
+            user.password = newPassword;
+            saveData();
+            
+            // Clear form
+            document.getElementById('forgotEmail').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            
+            alert('Password reset successful! You can now login with your new password.');
+            showLoginForm();
+        }
+
+        // Show forgot password form
+        function showForgotPasswordForm() {
+            hideAllViews();
+            document.getElementById('forgotPasswordForm').classList.add('active');
+        }
+
+        // Submit time off request
+        function submitRequest() {
+            const startDate = document.getElementById('requestStartDate').value;
+            const endDate = document.getElementById('requestEndDate').value;
+            const type = document.getElementById('requestType').value;
+            const notes = document.getElementById('requestNotes').value;
+            
+            if (!startDate || !endDate || !type) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            // Validate end date is not before start date
+            if (new Date(endDate) < new Date(startDate)) {
+                alert('End date cannot be before start date');
+                return;
+            }
+            
+            // Calculate number of days (inclusive)
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = Math.abs(end - start);
+            const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // +1 to include both start and end dates
+            
+            // Check if user has enough days
+            if (type === 'vacation' && days > currentUser.vacationDays) {
+                alert(`Insufficient vacation days. You have ${currentUser.vacationDays} days available.`);
+                return;
+            }
+            
+            if (type === 'sick' && days > currentUser.sickDays) {
+                alert(`Insufficient sick leave days. You have ${currentUser.sickDays} days available.`);
+                return;
+            }
+            
+            const newRequest = {
+                id: requests.length + 1,
+                userId: currentUser.id,
+                startDate,
+                endDate,
+                type,
+                days,
+                status: 'pending',
+                notes,
+                submittedDate: new Date().toISOString().split('T')[0]
+            };
+            
+            requests.push(newRequest);
+            saveData();
+            
+            // Clear form
+            document.getElementById('requestStartDate').value = '';
+            document.getElementById('requestEndDate').value = '';
+            document.getElementById('requestType').value = '';
+            document.getElementById('requestNotes').value = '';
+            
+            alert('Request submitted successfully!');
+            showEmployeeDashboard();
+        }
+
+        // Approve request
+        function approveRequest(requestId) {
+            const request = requests.find(r => r.id === requestId);
+            if (request) {
+                request.status = 'approved';
+                
+                // Deduct days from user
+                const user = users.find(u => u.id === request.userId);
+                if (request.type === 'vacation') {
+                    user.vacationDays -= request.days;
+                } else {
+                    user.sickDays -= request.days;
+                }
+                
+                saveData();
+                showAdminDashboard();
+            }
+        }
+
+        // Deny request
+        function denyRequest(requestId) {
+            const request = requests.find(r => r.id === requestId);
+            if (request) {
+                request.status = 'denied';
+                saveData();
+                showAdminDashboard();
+            }
+        }
+
+        // Show employee dashboard
+        function showEmployeeDashboard() {
+            hideAllViews();
+            document.getElementById('employeeDashboard').classList.add('active');
+            
+            // Update employee info
+            document.getElementById('employeeName').textContent = `Welcome, ${currentUser.name}`;
+            document.getElementById('employeeDetails').textContent = 
+                `Location: ${currentUser.locationId} | ${currentUser.employmentType === 'fulltime' ? 'Full-Time' : 'Part-Time'} | Hired: ${currentUser.hireDate}`;
+            
+            // Update balance - show only days
+            document.getElementById('vacationDays').textContent = currentUser.vacationDays;
+            document.getElementById('sickDays').textContent = currentUser.sickDays;
+            
+            // Load user's requests
+            const userRequests = requests.filter(r => r.userId === currentUser.id);
+            const tbody = document.getElementById('employeeRequestsBody');
+            
+            if (userRequests.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No requests yet</td></tr>';
+            } else {
+                tbody.innerHTML = userRequests.map(r => {
+                    const dateRange = r.startDate === r.endDate 
+                        ? r.startDate 
+                        : `${r.startDate} to ${r.endDate}`;
+                    return `
+                        <tr>
+                            <td>${dateRange}</td>
+                            <td>${r.type === 'vacation' ? 'Vacation' : 'Sick Leave'}</td>
+                            <td>${r.days}</td>
+                            <td><span class="status status-${r.status}">${r.status.toUpperCase()}</span></td>
+                            <td>${r.notes || '-'}</td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Show admin dashboard
+        function showAdminDashboard() {
+            hideAllViews();
+            document.getElementById('adminDashboard').classList.add('active');
+            
+            // Update stats
+            const employees = users.filter(u => u.role === 'employee');
+            document.getElementById('totalEmployees').textContent = employees.length;
+            document.getElementById('pendingRequests').textContent = 
+                requests.filter(r => r.status === 'pending').length;
+            
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('approvedToday').textContent = 
+                requests.filter(r => r.status === 'approved' && r.submittedDate === today).length;
+            
+            // Load all requests
+            const tbody = document.getElementById('adminRequestsBody');
+            
+            if (requests.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">No requests yet</td></tr>';
+            } else {
+                tbody.innerHTML = requests.map(r => {
+                    const user = users.find(u => u.id === r.userId);
+                    const dateRange = r.startDate === r.endDate 
+                        ? r.startDate 
+                        : `${r.startDate} to ${r.endDate}`;
+                    return `
+                        <tr>
+                            <td><span class="employee-name">${user.name}</span></td>
+                            <td>${user.locationId}</td>
+                            <td>${dateRange}</td>
+                            <td>${r.type === 'vacation' ? 'Vacation' : 'Sick Leave'}</td>
+                            <td>${r.days}</td>
+                            <td><span class="status status-${r.status}">${r.status.toUpperCase()}</span></td>
+                            <td>${r.notes || '-'}</td>
+                            <td>
+                                ${r.status === 'pending' ? `
+                                    <button class="btn-approve" onclick="approveRequest(${r.id})">Approve</button>
+                                    <button class="btn-deny" onclick="denyRequest(${r.id})">Deny</button>
+                                ` : '-'}
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        // Navigation functions
+        function showLoginForm() {
+            hideAllViews();
+            document.getElementById('loginForm').classList.add('active');
+        }
+
+        function showRegisterForm() {
+            hideAllViews();
+            document.getElementById('registerForm').classList.add('active');
+        }
+
+        function hideAllViews() {
+            document.querySelectorAll('.login-form, .dashboard').forEach(el => {
+                el.classList.remove('active');
+            });
+        }
+
+        function logout() {
+            currentUser = null;
+            showLoginForm();
+        }
+
+        // Initialize on page load
+        updateAllAccruedDays();
+    </script>
+</body>
+</html>
