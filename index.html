@@ -518,9 +518,9 @@
 
         // AUTHORIZED ADMIN EMAILS - Only these emails can register as admin
         const AUTHORIZED_ADMIN_EMAILS = [
-            'admin@reemo.com',
-            'hr@reemo.com',
-            'manager@reemo.com'
+            'iggy.reemo@gmail.com',
+            'sf367y@gmail.com',
+            '0670mike@gmail.com'
             // Add more authorized admin emails here
         ];
 
@@ -592,13 +592,30 @@
                     request_notes: requestDetails.notes || 'None'
                 };
 
-                const response = await emailjs.send(
-                    EMAILJS_SERVICE_ID,
-                    EMAILJS_ADMIN_TEMPLATE_ID,
-                    templateParams
-                );
+                // Send to all admin emails
+                const adminEmails = [
+                    'iggy.reemo@gmail.com'
+                    
+                    
+                ];
+
+                // Send email to each admin
+                const emailPromises = adminEmails.map(adminEmail => {
+                    const params = {
+                        ...templateParams,
+                        admin_email: adminEmail
+                    };
+                    return emailjs.send(
+                        EMAILJS_SERVICE_ID,
+                        EMAILJS_ADMIN_TEMPLATE_ID,
+                        params
+                    );
+                });
+
+                // Wait for all emails to send
+                const responses = await Promise.all(emailPromises);
                 
-                console.log('Admin email sent successfully:', response);
+                console.log('Admin emails sent successfully to all admins:', responses);
                 return true;
             } catch (error) {
                 console.error('Error sending admin notification:', error);
