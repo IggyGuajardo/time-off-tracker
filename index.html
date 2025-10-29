@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Time Off Tracker</title>
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -504,9 +505,16 @@
     </div>
 
     <script>
-        // FORMSPREE EMAIL ENDPOINTS
-        const FORMSPREE_ADMIN_ENDPOINT = 'https://formspree.io/f/xdkpzyel';
-        const FORMSPREE_EMPLOYEE_ENDPOINT = 'https://formspree.io/f/mldonaja';
+        // EMAILJS CONFIGURATION
+        const EMAILJS_SERVICE_ID = 'service_6ktvivl';
+        const EMAILJS_ADMIN_TEMPLATE_ID = 'template_wfr56w9';
+        const EMAILJS_EMPLOYEE_TEMPLATE_ID = 'template_0ebpplc';
+        const EMAILJS_PUBLIC_KEY = '1zB3G21AGc-BegH1l';
+
+        // Initialize EmailJS
+        (function() {
+            emailjs.init(EMAILJS_PUBLIC_KEY);
+        })();
 
         // AUTHORIZED ADMIN EMAILS - Only these emails can register as admin
         const AUTHORIZED_ADMIN_EMAILS = [
@@ -571,32 +579,27 @@
         }
 
         // Send email notification to admin when employee submits request
-        async function sendAdminNotification(employeeName, employeeEmail, requestDetails) {
+        async function sendAdminNotification(employeeName, employeeEmail, employeeLocation, requestDetails) {
             try {
-                const response = await fetch(FORMSPREE_ADMIN_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        subject: `New Time Off Request from ${employeeName}`,
-                        message: `
-NEW TIME OFF REQUEST SUBMITTED
+                const templateParams = {
+                    employee_name: employeeName,
+                    employee_email: employeeEmail,
+                    employee_location: employeeLocation,
+                    request_type: requestDetails.type === 'vacation' ? 'Vacation' : 'Sick Leave',
+                    start_date: formatDate(requestDetails.startDate),
+                    end_date: formatDate(requestDetails.endDate),
+                    days_requested: requestDetails.days,
+                    request_notes: requestDetails.notes || 'None'
+                };
 
-Employee: ${employeeName}
-Email: ${employeeEmail}
-Type: ${requestDetails.type === 'vacation' ? 'Vacation' : 'Sick Leave'}
-Start Date: ${formatDate(requestDetails.startDate)}
-End Date: ${formatDate(requestDetails.endDate)}
-Number of Days: ${requestDetails.days}
-Notes: ${requestDetails.notes || 'None'}
-
-Please log in to the Time Off Tracker to approve or deny this request.
-                        `,
-                        _replyto: employeeEmail
-                    })
-                });
-                return response.ok;
+                const response = await emailjs.send(
+                    EMAILJS_SERVICE_ID,
+                    EMAILJS_ADMIN_TEMPLATE_ID,
+                    templateParams
+                );
+                
+                console.log('Admin email sent successfully:', response);
+                return true;
             } catch (error) {
                 console.error('Error sending admin notification:', error);
                 return false;
@@ -607,34 +610,29 @@ Please log in to the Time Off Tracker to approve or deny this request.
         async function sendEmployeeNotification(employeeEmail, employeeName, requestDetails, status) {
             try {
                 const statusText = status === 'approved' ? 'APPROVED' : 'DENIED';
-                const response = await fetch(FORMSPREE_EMPLOYEE_ENDPOINT, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        email: employeeEmail,
-                        subject: `Time Off Request ${statusText}`,
-                        message: `
-Dear ${employeeName},
+                const statusMessage = status === 'approved' 
+                    ? 'Enjoy your time off!' 
+                    : 'Please contact your manager for more information.';
 
-Your time off request has been ${statusText}.
+                const templateParams = {
+                    employee_email: employeeEmail,
+                    employee_name: employeeName,
+                    request_type: requestDetails.type === 'vacation' ? 'Vacation' : 'Sick Leave',
+                    start_date: formatDate(requestDetails.startDate),
+                    end_date: formatDate(requestDetails.endDate),
+                    days_requested: requestDetails.days,
+                    status_text: statusText,
+                    status_message: statusMessage
+                };
 
-Request Details:
-Type: ${requestDetails.type === 'vacation' ? 'Vacation' : 'Sick Leave'}
-Start Date: ${formatDate(requestDetails.startDate)}
-End Date: ${formatDate(requestDetails.endDate)}
-Number of Days: ${requestDetails.days}
-Status: ${statusText}
-
-${status === 'approved' ? 'Enjoy your time off!' : 'Please contact your manager for more information.'}
-
-Best regards,
-REEMO Time Off Tracker
-                        `
-                    })
-                });
-                return response.ok;
+                const response = await emailjs.send(
+                    EMAILJS_SERVICE_ID,
+                    EMAILJS_EMPLOYEE_TEMPLATE_ID,
+                    templateParams
+                );
+                
+                console.log('Employee email sent successfully:', response);
+                return true;
             } catch (error) {
                 console.error('Error sending employee notification:', error);
                 return false;
@@ -933,7 +931,7 @@ REEMO Time Off Tracker
             saveData();
             
             // Send email notification to admin
-            await sendAdminNotification(currentUser.name, currentUser.email, newRequest);
+            await sendAdminNotification(currentUser.name, currentUser.email, currentUser.locationId, newRequest);
             
             // Clear form
             document.getElementById('requestStartDate').value = '';
@@ -1097,4 +1095,5 @@ REEMO Time Off Tracker
     </script>
 </body>
 </html>
+
 
