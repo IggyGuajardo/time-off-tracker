@@ -518,9 +518,9 @@
 
         // AUTHORIZED ADMIN EMAILS - Only these emails can register as admin
         const AUTHORIZED_ADMIN_EMAILS = [
-            'iggy.reemo@gmail.com',
-            'sf367y@gmail.com',
-            '0670mike@gmail.com'
+            'admin@reemo.com',
+            'hr@reemo.com',
+            'manager@reemo.com'
             // Add more authorized admin emails here
         ];
 
@@ -642,6 +642,8 @@
         // Send confirmation email to employee when they submit request
         async function sendEmployeeConfirmation(employeeEmail, employeeName, requestDetails) {
             try {
+                console.log('Attempting to send employee confirmation to:', employeeEmail);
+                
                 const templateParams = {
                     employee_email: employeeEmail,
                     employee_name: employeeName,
@@ -653,6 +655,8 @@
                     status_message: 'Your request has been submitted and is pending approval. You will receive another email once your request has been reviewed.'
                 };
 
+                console.log('Template params:', templateParams);
+
                 const response = await emailjs.send(
                     EMAILJS_SERVICE_ID,
                     EMAILJS_EMPLOYEE_TEMPLATE_ID,
@@ -663,6 +667,7 @@
                 return true;
             } catch (error) {
                 console.error('Error sending employee confirmation:', error);
+                console.error('Error details:', error.text || error.message);
                 return false;
             }
         }
@@ -958,11 +963,15 @@
             requests.push(newRequest);
             saveData();
             
+            console.log('About to send admin notification...');
             // Send email notification to admin
             await sendAdminNotification(currentUser.name, currentUser.email, currentUser.locationId, newRequest);
             
+            console.log('About to send employee confirmation...');
+            console.log('Current user email:', currentUser.email);
             // Send confirmation email to employee
-            await sendEmployeeConfirmation(currentUser.email, currentUser.name, newRequest);
+            const employeeEmailSent = await sendEmployeeConfirmation(currentUser.email, currentUser.name, newRequest);
+            console.log('Employee email sent result:', employeeEmailSent);
             
             // Clear form
             document.getElementById('requestStartDate').value = '';
