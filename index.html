@@ -519,8 +519,8 @@
         // AUTHORIZED ADMIN EMAILS - Only these emails can register as admin
         const AUTHORIZED_ADMIN_EMAILS = [
             'iggy.reemo@gmail.com',
-            'sf367y@gmail.com',
-            '0670mike@gmail.com'
+            'hr@reemo.com',
+            'manager@reemo.com'
             // Add more authorized admin emails here
         ];
 
@@ -589,31 +589,17 @@
                     start_date: formatDate(requestDetails.startDate),
                     end_date: formatDate(requestDetails.endDate),
                     days_requested: requestDetails.days,
-                    request_notes: requestDetails.notes || 'None'
+                    request_notes: requestDetails.notes || 'None',
+                    admin_email: 'iggy.reemo@gmail.com'
                 };
 
-                // Send to all admin emails
-                const adminEmails = [
-                    'iggy.reemo@gmail.com'    
-                ];
-
-                // Send email to each admin
-                const emailPromises = adminEmails.map(adminEmail => {
-                    const params = {
-                        ...templateParams,
-                        admin_email: adminEmail
-                    };
-                    return emailjs.send(
-                        EMAILJS_SERVICE_ID,
-                        EMAILJS_ADMIN_TEMPLATE_ID,
-                        params
-                    );
-                });
-
-                // Wait for all emails to send
-                const responses = await Promise.all(emailPromises);
+                const response = await emailjs.send(
+                    EMAILJS_SERVICE_ID,
+                    EMAILJS_ADMIN_TEMPLATE_ID,
+                    templateParams
+                );
                 
-                console.log('Admin emails sent successfully to all admins:', responses);
+                console.log('Admin email sent successfully:', response);
                 return true;
             } catch (error) {
                 console.error('Error sending admin notification:', error);
