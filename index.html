@@ -504,6 +504,10 @@
     </div>
 
     <script>
+        // FORMSPREE EMAIL ENDPOINTS
+        const FORMSPREE_ADMIN_ENDPOINT = 'https://formspree.io/f/xdkpzyel';
+        const FORMSPREE_EMPLOYEE_ENDPOINT = 'https://formspree.io/f/mldonaja';
+
         // AUTHORIZED ADMIN EMAILS - Only these emails can register as admin
         const AUTHORIZED_ADMIN_EMAILS = [
             'admin@reemo.com',
@@ -564,6 +568,77 @@
             const day = date.getDate().toString().padStart(2, '0');
             const year = date.getFullYear();
             return `${month}/${day}/${year}`;
+        }
+
+        // Send email notification to admin when employee submits request
+        async function sendAdminNotification(employeeName, employeeEmail, requestDetails) {
+            try {
+                const response = await fetch(FORMSPREE_ADMIN_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        subject: `New Time Off Request from ${employeeName}`,
+                        message: `
+NEW TIME OFF REQUEST SUBMITTED
+
+Employee: ${employeeName}
+Email: ${employeeEmail}
+Type: ${requestDetails.type === 'vacation' ? 'Vacation' : 'Sick Leave'}
+Start Date: ${formatDate(requestDetails.startDate)}
+End Date: ${formatDate(requestDetails.endDate)}
+Number of Days: ${requestDetails.days}
+Notes: ${requestDetails.notes || 'None'}
+
+Please log in to the Time Off Tracker to approve or deny this request.
+                        `,
+                        _replyto: employeeEmail
+                    })
+                });
+                return response.ok;
+            } catch (error) {
+                console.error('Error sending admin notification:', error);
+                return false;
+            }
+        }
+
+        // Send email notification to employee when request is approved/denied
+        async function sendEmployeeNotification(employeeEmail, employeeName, requestDetails, status) {
+            try {
+                const statusText = status === 'approved' ? 'APPROVED' : 'DENIED';
+                const response = await fetch(FORMSPREE_EMPLOYEE_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: employeeEmail,
+                        subject: `Time Off Request ${statusText}`,
+                        message: `
+Dear ${employeeName},
+
+Your time off request has been ${statusText}.
+
+Request Details:
+Type: ${requestDetails.type === 'vacation' ? 'Vacation' : 'Sick Leave'}
+Start Date: ${formatDate(requestDetails.startDate)}
+End Date: ${formatDate(requestDetails.endDate)}
+Number of Days: ${requestDetails.days}
+Status: ${statusText}
+
+${status === 'approved' ? 'Enjoy your time off!' : 'Please contact your manager for more information.'}
+
+Best regards,
+REEMO Time Off Tracker
+                        `
+                    })
+                });
+                return response.ok;
+            } catch (error) {
+                console.error('Error sending employee notification:', error);
+                return false;
+            }
         }
 
         // Save data to localStorage
@@ -808,7 +883,7 @@
         }
 
         // Submit time off request
-        function submitRequest() {
+        async function submitRequest() {
             const startDate = document.getElementById('requestStartDate').value;
             const endDate = document.getElementById('requestEndDate').value;
             const type = document.getElementById('requestType').value;
@@ -857,18 +932,21 @@
             requests.push(newRequest);
             saveData();
             
+            // Send email notification to admin
+            await sendAdminNotification(currentUser.name, currentUser.email, newRequest);
+            
             // Clear form
             document.getElementById('requestStartDate').value = '';
             document.getElementById('requestEndDate').value = '';
             document.getElementById('requestType').value = '';
             document.getElementById('requestNotes').value = '';
             
-            alert('Request submitted successfully!');
+            alert('Request submitted successfully! Admin has been notified via email.');
             showEmployeeDashboard();
         }
 
         // Approve request
-        function approveRequest(requestId) {
+        async function approveRequest(requestId) {
             const request = requests.find(r => r.id === requestId);
             if (request) {
                 request.status = 'approved';
@@ -882,16 +960,27 @@
                 }
                 
                 saveData();
+                
+                // Send email notification to employee
+                await sendEmployeeNotification(user.email, user.name, request, 'approved');
+                
+                alert('Request approved! Employee has been notified via email.');
                 showAdminDashboard();
             }
         }
 
         // Deny request
-        function denyRequest(requestId) {
+        async function denyRequest(requestId) {
             const request = requests.find(r => r.id === requestId);
             if (request) {
                 request.status = 'denied';
                 saveData();
+                
+                // Send email notification to employee
+                const user = users.find(u => u.id === request.userId);
+                await sendEmployeeNotification(user.email, user.name, request, 'denied');
+                
+                alert('Request denied. Employee has been notified via email.');
                 showAdminDashboard();
             }
         }
@@ -1008,3 +1097,4 @@
     </script>
 </body>
 </html>
+
