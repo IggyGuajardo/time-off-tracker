@@ -324,12 +324,6 @@
                 <div style="margin-top: 15px; text-align: center;">
                     <a href="#" onclick="showForgotPasswordForm(); return false;" style="color: #5ba3d0; text-decoration: none; font-weight: 600;">Forgot Password?</a>
                 </div>
-                
-                <div style="margin-top: 30px; padding: 20px; background: #f8f9fa; border-radius: 5px;">
-                    <h4 style="margin-bottom: 10px;">Demo Accounts:</h4>
-                    <p><strong>Admin:</strong> admin@company.com / admin123</p>
-                    <p><strong>Employee:</strong> john@company.com / john123</p>
-                </div>
             </div>
 
             <!-- Registration Form -->
@@ -348,10 +342,20 @@
                     <input type="password" id="regPassword" placeholder="Create a password" required>
                 </div>
                 <div class="form-group">
+                    <label for="regAccountType">Account Type</label>
+                    <select id="regAccountType" required onchange="toggleAdminWarning()">
+                        <option value="employee">Employee</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+                <div id="adminWarning" style="display: none; margin-bottom: 20px; padding: 15px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 5px;">
+                    <strong>⚠️ Admin Registration:</strong> Only authorized email addresses can register as admin.
+                </div>
+                <div class="form-group" id="employeeFields">
                     <label for="regLocation">Location ID</label>
                     <input type="text" id="regLocation" placeholder="Enter your location ID" required>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="employeeFields2">
                     <label for="regEmploymentType">Employment Type</label>
                     <select id="regEmploymentType" required>
                         <option value="">Select type</option>
@@ -359,7 +363,7 @@
                         <option value="parttime">Part-Time</option>
                     </select>
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="employeeFields3">
                     <label for="regHireDate">Hire Date</label>
                     <input type="date" id="regHireDate" required>
                 </div>
@@ -500,6 +504,14 @@
     </div>
 
     <script>
+        // AUTHORIZED ADMIN EMAILS - Only these emails can register as admin
+        const AUTHORIZED_ADMIN_EMAILS = [
+            'iggy.reemo@gmail.com',
+            'sf367y@gmail.com',
+            '0670mike@gmail.com'
+            // Add more authorized admin emails here
+        ];
+
         // Initialize data structure
         let currentUser = null;
         
@@ -626,12 +638,10 @@
             const name = document.getElementById('regName').value;
             const email = document.getElementById('regEmail').value;
             const password = document.getElementById('regPassword').value;
-            const locationId = document.getElementById('regLocation').value;
-            const employmentType = document.getElementById('regEmploymentType').value;
-            const hireDate = document.getElementById('regHireDate').value;
+            const accountType = document.getElementById('regAccountType').value;
             
-            if (!name || !email || !password || !locationId || !employmentType || !hireDate) {
-                alert('Please fill in all fields');
+            if (!name || !email || !password || !accountType) {
+                alert('Please fill in all required fields');
                 return;
             }
             
@@ -641,26 +651,89 @@
                 return;
             }
             
-            const { vacationDays, sickDays } = calculateAccruedDays(hireDate);
+            let newUser;
             
-            const newUser = {
-                id: users.length + 1,
-                name,
-                email,
-                password,
-                role: 'employee',
-                locationId,
-                employmentType,
-                hireDate,
-                vacationDays,
-                sickDays
-            };
+            if (accountType === 'admin') {
+                // Validate admin email
+                if (!AUTHORIZED_ADMIN_EMAILS.includes(email.toLowerCase())) {
+                    alert('⚠️ Unauthorized Admin Email\n\nThis email address is not authorized to register as an admin. Please contact your system administrator or register as an employee.');
+                    return;
+                }
+                
+                // Create admin user
+                newUser = {
+                    id: users.length + 1,
+                    name,
+                    email,
+                    password,
+                    role: 'admin',
+                    locationId: 'HQ-ADMIN',
+                    employmentType: 'fulltime',
+                    hireDate: new Date().toISOString().split('T')[0],
+                    vacationDays: 0,
+                    sickDays: 0
+                };
+            } else {
+                // Employee registration - require all fields
+                const locationId = document.getElementById('regLocation').value;
+                const employmentType = document.getElementById('regEmploymentType').value;
+                const hireDate = document.getElementById('regHireDate').value;
+                
+                if (!locationId || !employmentType || !hireDate) {
+                    alert('Please fill in all fields');
+                    return;
+                }
+                
+                const { vacationDays, sickDays } = calculateAccruedDays(hireDate);
+                
+                newUser = {
+                    id: users.length + 1,
+                    name,
+                    email,
+                    password,
+                    role: 'employee',
+                    locationId,
+                    employmentType,
+                    hireDate,
+                    vacationDays,
+                    sickDays
+                };
+            }
             
             users.push(newUser);
             saveData();
             
             alert('Registration successful! You can now login.');
             showLoginForm();
+        }
+
+        // Toggle admin warning message
+        function toggleAdminWarning() {
+            const accountType = document.getElementById('regAccountType').value;
+            const adminWarning = document.getElementById('adminWarning');
+            const employeeFields = document.getElementById('employeeFields');
+            const employeeFields2 = document.getElementById('employeeFields2');
+            const employeeFields3 = document.getElementById('employeeFields3');
+            
+            if (accountType === 'admin') {
+                adminWarning.style.display = 'block';
+                employeeFields.style.display = 'none';
+                employeeFields2.style.display = 'none';
+                employeeFields3.style.display = 'none';
+                // Make employee fields not required for admin
+                document.getElementById('regLocation').required = false;
+                document.getElementById('regEmploymentType').required = false;
+                document.getElementById('regHireDate').required = false;
+            } else {
+                adminWarning.style.display = 'none';
+                employeeFields.style.display = 'block';
+                employeeFields2.style.display = 'block';
+                employeeFields3.style.display = 'block';
+                // Make employee fields required
+                document.getElementById('regLocation').required = true;
+                document.getElementById('regEmploymentType').required = true;
+                document.getElementById('regHireDate').required = true;
+            }
         }
 
         // Reset Password
