@@ -2,10 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Time Off Tracker</title>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <style>
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            position: relative;
+        }
         * {
             margin: 0;
             padding: 0;
@@ -20,6 +25,8 @@
             justify-content: center;
             align-items: center;
             padding: 20px;
+            overflow-x: hidden;
+            width: 100%;
         }
 
         .container {
@@ -29,6 +36,7 @@
             width: 100%;
             max-width: 1200px;
             overflow: hidden;
+            overflow-x: hidden;
         }
 
         .header {
@@ -269,6 +277,7 @@
         @media (max-width: 768px) {
             .container {
                 margin: 10px;
+                max-width: 100%;
             }
 
             .balance-cards {
@@ -344,6 +353,82 @@
                 display: inline-block;
                 margin: 2px 1%;
             }
+
+            .edit-btn {
+                width: 48%;
+                display: inline-block;
+                margin: 2px 1%;
+            }
+
+            /* Calendar mobile fixes */
+            .calendar-container {
+                padding: 10px;
+                overflow-x: hidden;
+            }
+
+            .calendar-header {
+                flex-direction: row;
+                gap: 10px;
+                margin-bottom: 15px;
+            }
+
+            .calendar-header button {
+                padding: 8px 12px;
+                font-size: 12px;
+                width: auto;
+                flex: 0 0 auto;
+            }
+
+            .calendar-header h3 {
+                font-size: 18px;
+                flex: 1;
+                text-align: center;
+            }
+
+            .calendar-grid {
+                gap: 2px;
+                font-size: 11px;
+            }
+
+            .calendar-day {
+                min-height: 60px;
+                padding: 3px;
+            }
+
+            .calendar-day-header {
+                padding: 5px 2px;
+                font-size: 11px;
+            }
+
+            .calendar-day-number {
+                font-size: 12px;
+            }
+
+            .calendar-event {
+                font-size: 9px;
+                padding: 1px 3px;
+                margin: 1px 0;
+            }
+
+            .calendar-legend {
+                flex-direction: column;
+                gap: 8px;
+                font-size: 12px;
+                align-items: flex-start;
+            }
+
+            .tab-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .tab-btn {
+                width: 100%;
+            }
+
+            .content {
+                padding: 15px;
+            }
         }
 
         .hidden {
@@ -374,6 +459,8 @@
             display: grid;
             grid-template-columns: repeat(7, 1fr);
             gap: 5px;
+            width: 100%;
+            overflow: hidden;
         }
 
         .calendar-day-header {
@@ -382,6 +469,7 @@
             padding: 10px;
             background: #f8f9fa;
             border-radius: 5px;
+            overflow: hidden;
         }
 
         .calendar-day {
@@ -390,6 +478,8 @@
             border-radius: 5px;
             padding: 5px;
             position: relative;
+            overflow: hidden;
+            word-wrap: break-word;
         }
 
         .calendar-day.other-month {
