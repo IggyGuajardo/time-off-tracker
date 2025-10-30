@@ -277,15 +277,52 @@
 
             .request-table {
                 font-size: 12px;
+                display: block;
+                overflow-x: auto;
             }
 
-            .request-table th, .request-table td {
-                padding: 10px 5px;
+            .request-table thead {
+                display: none;
+            }
+
+            .request-table tr {
+                display: block;
+                margin-bottom: 15px;
+                border: 1px solid #e0e0e0;
+                border-radius: 5px;
+                padding: 10px;
+            }
+
+            .request-table td {
+                display: block;
+                text-align: right;
+                padding: 8px;
+                border-bottom: 1px solid #f0f0f0;
+                position: relative;
+                padding-left: 50%;
+            }
+
+            .request-table td:before {
+                content: attr(data-label);
+                position: absolute;
+                left: 10px;
+                font-weight: 600;
+                text-align: left;
+            }
+
+            .request-table td:last-child {
+                border-bottom: none;
             }
 
             button {
                 padding: 10px 20px;
                 font-size: 14px;
+                width: 100%;
+                margin: 5px 0;
+            }
+
+            .btn-secondary {
+                margin-left: 0;
             }
 
             .logout-btn {
@@ -293,10 +330,146 @@
                 display: block;
                 margin-bottom: 10px;
             }
+
+            .admin-stats {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 2em;
+            }
+
+            .btn-approve, .btn-deny {
+                width: 48%;
+                display: inline-block;
+                margin: 2px 1%;
+            }
         }
 
         .hidden {
             display: none;
+        }
+
+        /* Calendar Styles */
+        .calendar-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .calendar-nav {
+            display: flex;
+            gap: 10px;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+        }
+
+        .calendar-day-header {
+            text-align: center;
+            font-weight: 600;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .calendar-day {
+            min-height: 80px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            padding: 5px;
+            position: relative;
+        }
+
+        .calendar-day.other-month {
+            background: #f8f9fa;
+            opacity: 0.5;
+        }
+
+        .calendar-day-number {
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .calendar-event {
+            background: #7fc8ed;
+            color: white;
+            font-size: 11px;
+            padding: 2px 5px;
+            border-radius: 3px;
+            margin: 2px 0;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .calendar-event.sick {
+            background: #ff9999;
+        }
+
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .tab-btn {
+            padding: 10px 20px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .tab-btn.active {
+            background: linear-gradient(135deg, #7fc8ed 0%, #5ba3d0 100%);
+            color: white;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .edit-btn {
+            background: #ffc107;
+            padding: 8px 15px;
+            font-size: 14px;
+            margin-right: 5px;
+        }
+
+        .cancel-edit-btn {
+            background: #6c757d;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        .denial-reason {
+            margin-top: 10px;
+        }
+
+        .denial-reason textarea {
+            width: 100%;
+            padding: 8px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 12px;
+            min-height: 60px;
         }
     </style>
 </head>
@@ -448,10 +621,11 @@
                                 <th>Days</th>
                                 <th>Status</th>
                                 <th>Notes</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody id="employeeRequestsBody">
-                            <tr><td colspan="5" style="text-align: center; padding: 40px;">No requests yet</td></tr>
+                            <tr><td colspan="6" style="text-align: center; padding: 40px;">No requests yet</td></tr>
                         </tbody>
                     </table>
                 </div>
@@ -480,25 +654,46 @@
                     </div>
                 </div>
 
-                <div class="section">
-                    <h2>All Time Off Requests</h2>
-                    <table class="request-table" id="adminRequestsTable">
-                        <thead>
-                            <tr>
-                                <th>Employee</th>
-                                <th>Location</th>
-                                <th>Dates</th>
-                                <th>Type</th>
-                                <th>Days</th>
-                                <th>Status</th>
-                                <th>Notes</th>
-                                <th>Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminRequestsBody">
-                            <tr><td colspan="8" style="text-align: center; padding: 40px;">No requests yet</td></tr>
-                        </tbody>
-                    </table>
+                <div class="tab-buttons">
+                    <button class="tab-btn active" onclick="switchTab('requests')">All Requests</button>
+                    <button class="tab-btn" onclick="switchTab('calendar')">Calendar View</button>
+                </div>
+
+                <div id="requestsTab" class="tab-content active">
+                    <div class="section">
+                        <h2>All Time Off Requests</h2>
+                        <table class="request-table" id="adminRequestsTable">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Location</th>
+                                    <th>Dates</th>
+                                    <th>Type</th>
+                                    <th>Days</th>
+                                    <th>Status</th>
+                                    <th>Notes</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminRequestsBody">
+                                <tr><td colspan="8" style="text-align: center; padding: 40px;">No requests yet</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="calendarTab" class="tab-content">
+                    <div class="section">
+                        <h2>Time Off Calendar</h2>
+                        <div class="calendar-container">
+                            <div class="calendar-header">
+                                <button onclick="previousMonth()">&larr; Previous</button>
+                                <h3 id="calendarMonthYear"></h3>
+                                <button onclick="nextMonth()">Next &rarr;</button>
+                            </div>
+                            <div class="calendar-grid" id="calendarGrid"></div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -518,7 +713,7 @@
 
         // AUTHORIZED ADMIN EMAILS - Only these emails can register as admin
         const AUTHORIZED_ADMIN_EMAILS = [
-            'iggy.reemo@gmail.com',
+            'admin@reemo.com',
             'hr@reemo.com',
             'manager@reemo.com'
             // Add more authorized admin emails here
@@ -526,6 +721,8 @@
 
         // Initialize data structure
         let currentUser = null;
+        let currentCalendarDate = new Date();
+        let editingRequestId = null;
         
         // Load data from localStorage or initialize
         let users = JSON.parse(localStorage.getItem('timeOffUsers')) || [
@@ -565,7 +762,8 @@
                 days: 1,
                 status: 'pending',
                 notes: 'Family vacation',
-                submittedDate: '2025-10-28'
+                submittedDate: '2025-10-28',
+                denialReason: null
             }
         ];
 
@@ -608,12 +806,12 @@
         }
 
         // Send email notification to employee when request is approved/denied
-        async function sendEmployeeNotification(employeeEmail, employeeName, requestDetails, status) {
+        async function sendEmployeeNotification(employeeEmail, employeeName, requestDetails, status, customMessage = null) {
             try {
                 const statusText = status === 'approved' ? 'APPROVED' : 'DENIED';
-                const statusMessage = status === 'approved' 
+                const statusMessage = customMessage || (status === 'approved' 
                     ? 'Enjoy your time off!' 
-                    : 'Please contact your manager for more information.';
+                    : 'Please contact your manager for more information.');
 
                 const templateParams = {
                     employee_email: employeeEmail,
@@ -1009,15 +1207,28 @@
         }
 
         // Deny request
-        async function denyRequest(requestId) {
+        async function denyRequest(requestId, denialReason) {
             const request = requests.find(r => r.id === requestId);
             if (request) {
                 request.status = 'denied';
+                request.denialReason = denialReason || null;
                 saveData();
                 
-                // Send email notification to employee
+                // Send email notification to employee with denial reason
                 const user = users.find(u => u.id === request.userId);
-                await sendEmployeeNotification(user.email, user.name, request, 'denied');
+                
+                // Add denial reason to status message if provided
+                const statusMessage = denialReason 
+                    ? `Reason for denial: ${denialReason}\n\nPlease contact your manager if you have questions.`
+                    : 'Please contact your manager for more information.';
+                
+                // Create a modified request object for email
+                const emailRequest = {
+                    ...request,
+                    statusMessage: statusMessage
+                };
+                
+                await sendEmployeeNotification(user.email, user.name, emailRequest, 'denied', statusMessage);
                 
                 alert('Request denied. Employee has been notified via email.');
                 showAdminDashboard();
@@ -1028,6 +1239,9 @@
         function showEmployeeDashboard() {
             hideAllViews();
             document.getElementById('employeeDashboard').classList.add('active');
+            
+            // Reset edit mode
+            cancelEdit();
             
             // Update employee info
             document.getElementById('employeeName').textContent = `Welcome, ${currentUser.name}`;
@@ -1043,19 +1257,30 @@
             const tbody = document.getElementById('employeeRequestsBody');
             
             if (userRequests.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 40px;">No requests yet</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 40px;">No requests yet</td></tr>';
             } else {
                 tbody.innerHTML = userRequests.map(r => {
                     const dateRange = r.startDate === r.endDate 
                         ? formatDate(r.startDate)
                         : `${formatDate(r.startDate)} to ${formatDate(r.endDate)}`;
+                    
+                    const actionButtons = r.status === 'pending' 
+                        ? `<button class="edit-btn" onclick="editRequest(${r.id})">Edit</button>
+                           <button class="btn-deny" onclick="deleteRequest(${r.id})">Delete</button>`
+                        : '-';
+                    
+                    const notesDisplay = r.status === 'denied' && r.denialReason
+                        ? `${r.notes || '-'}<br><strong>Denial Reason:</strong> ${r.denialReason}`
+                        : r.notes || '-';
+                    
                     return `
                         <tr>
-                            <td>${dateRange}</td>
-                            <td>${r.type === 'vacation' ? 'Vacation' : 'Sick Leave'}</td>
-                            <td>${r.days}</td>
-                            <td><span class="status status-${r.status}">${r.status.toUpperCase()}</span></td>
-                            <td>${r.notes || '-'}</td>
+                            <td data-label="Dates">${dateRange}</td>
+                            <td data-label="Type">${r.type === 'vacation' ? 'Vacation' : 'Sick Leave'}</td>
+                            <td data-label="Days">${r.days}</td>
+                            <td data-label="Status"><span class="status status-${r.status}">${r.status.toUpperCase()}</span></td>
+                            <td data-label="Notes">${notesDisplay}</td>
+                            <td data-label="Actions">${actionButtons}</td>
                         </tr>
                     `;
                 }).join('');
@@ -1088,24 +1313,37 @@
                     const dateRange = r.startDate === r.endDate 
                         ? formatDate(r.startDate)
                         : `${formatDate(r.startDate)} to ${formatDate(r.endDate)}`;
+                    
+                    const notesDisplay = r.denialReason 
+                        ? `${r.notes || '-'}<br><strong>Denial:</strong> ${r.denialReason}`
+                        : r.notes || '-';
+                    
                     return `
                         <tr>
-                            <td><span class="employee-name">${user.name}</span></td>
-                            <td>${user.locationId}</td>
-                            <td>${dateRange}</td>
-                            <td>${r.type === 'vacation' ? 'Vacation' : 'Sick Leave'}</td>
-                            <td>${r.days}</td>
-                            <td><span class="status status-${r.status}">${r.status.toUpperCase()}</span></td>
-                            <td>${r.notes || '-'}</td>
-                            <td>
+                            <td data-label="Employee"><span class="employee-name">${user.name}</span></td>
+                            <td data-label="Location">${user.locationId}</td>
+                            <td data-label="Dates">${dateRange}</td>
+                            <td data-label="Type">${r.type === 'vacation' ? 'Vacation' : 'Sick Leave'}</td>
+                            <td data-label="Days">${r.days}</td>
+                            <td data-label="Status"><span class="status status-${r.status}">${r.status.toUpperCase()}</span></td>
+                            <td data-label="Notes">${notesDisplay}</td>
+                            <td data-label="Action">
                                 ${r.status === 'pending' ? `
                                     <button class="btn-approve" onclick="approveRequest(${r.id})">Approve</button>
-                                    <button class="btn-deny" onclick="denyRequest(${r.id})">Deny</button>
+                                    <button class="btn-deny" onclick="showDenyDialog(${r.id})">Deny</button>
                                 ` : '-'}
                             </td>
                         </tr>
                     `;
                 }).join('');
+            }
+        }
+
+        // Show denial dialog
+        function showDenyDialog(requestId) {
+            const reason = prompt('Please enter reason for denial (optional):');
+            if (reason !== null) { // User clicked OK (even if empty)
+                denyRequest(requestId, reason);
             }
         }
 
@@ -1133,6 +1371,223 @@
 
         // Initialize on page load
         updateAllAccruedDays();
+
+        // Tab switching for admin
+        function switchTab(tabName) {
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            if (tabName === 'requests') {
+                document.querySelector('.tab-btn:first-child').classList.add('active');
+                document.getElementById('requestsTab').classList.add('active');
+            } else if (tabName === 'calendar') {
+                document.querySelector('.tab-btn:last-child').classList.add('active');
+                document.getElementById('calendarTab').classList.add('active');
+                renderCalendar();
+            }
+        }
+
+        // Calendar functions
+        function renderCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            // Update header
+            const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                'July', 'August', 'September', 'October', 'November', 'December'];
+            document.getElementById('calendarMonthYear').textContent = `${monthNames[month]} ${year}`;
+            
+            // Get first day of month and number of days
+            const firstDay = new Date(year, month, 1).getDay();
+            const daysInMonth = new Date(year, month + 1, 0).getDate();
+            const daysInPrevMonth = new Date(year, month, 0).getDate();
+            
+            let html = '';
+            
+            // Day headers
+            const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            dayNames.forEach(day => {
+                html += `<div class="calendar-day-header">${day}</div>`;
+            });
+            
+            // Previous month days
+            for (let i = firstDay - 1; i >= 0; i--) {
+                html += `<div class="calendar-day other-month">
+                    <div class="calendar-day-number">${daysInPrevMonth - i}</div>
+                </div>`;
+            }
+            
+            // Current month days
+            for (let day = 1; day <= daysInMonth; day++) {
+                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const events = getEventsForDate(dateStr);
+                
+                html += `<div class="calendar-day">
+                    <div class="calendar-day-number">${day}</div>`;
+                
+                events.forEach(event => {
+                    const eventClass = event.type === 'vacation' ? '' : 'sick';
+                    html += `<div class="calendar-event ${eventClass}" title="${event.name} - ${event.type}">${event.name}</div>`;
+                });
+                
+                html += `</div>`;
+            }
+            
+            // Next month days to fill grid
+            const totalCells = html.split('calendar-day').length - 1;
+            const remainingCells = 42 - totalCells; // 6 rows * 7 days
+            for (let day = 1; day <= remainingCells; day++) {
+                html += `<div class="calendar-day other-month">
+                    <div class="calendar-day-number">${day}</div>
+                </div>`;
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = html;
+        }
+
+        function getEventsForDate(dateStr) {
+            const events = [];
+            const targetDate = new Date(dateStr + 'T00:00:00');
+            
+            requests.forEach(request => {
+                if (request.status === 'approved') {
+                    const startDate = new Date(request.startDate + 'T00:00:00');
+                    const endDate = new Date(request.endDate + 'T00:00:00');
+                    
+                    if (targetDate >= startDate && targetDate <= endDate) {
+                        const user = users.find(u => u.id === request.userId);
+                        if (user) {
+                            events.push({
+                                name: user.name,
+                                type: request.type
+                            });
+                        }
+                    }
+                }
+            });
+            
+            return events;
+        }
+
+        function previousMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+            renderCalendar();
+        }
+
+        function nextMonth() {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+            renderCalendar();
+        }
+
+        // Edit request functions
+        function editRequest(requestId) {
+            const request = requests.find(r => r.id === requestId);
+            if (!request || request.status !== 'pending') {
+                alert('Only pending requests can be edited');
+                return;
+            }
+            
+            editingRequestId = requestId;
+            document.getElementById('requestStartDate').value = request.startDate;
+            document.getElementById('requestEndDate').value = request.endDate;
+            document.getElementById('requestType').value = request.type;
+            document.getElementById('requestNotes').value = request.notes || '';
+            
+            // Scroll to form
+            document.querySelector('.section h2').scrollIntoView({ behavior: 'smooth' });
+            
+            // Update button text
+            const submitBtn = document.querySelector('button[onclick="submitRequest()"]');
+            submitBtn.textContent = 'Update Request';
+            submitBtn.onclick = updateRequest;
+        }
+
+        function cancelEdit() {
+            editingRequestId = null;
+            document.getElementById('requestStartDate').value = '';
+            document.getElementById('requestEndDate').value = '';
+            document.getElementById('requestType').value = '';
+            document.getElementById('requestNotes').value = '';
+            
+            const submitBtn = document.querySelector('.section button');
+            submitBtn.textContent = 'Submit Request';
+            submitBtn.onclick = submitRequest;
+        }
+
+        async function updateRequest() {
+            const request = requests.find(r => r.id === editingRequestId);
+            if (!request) return;
+            
+            const startDate = document.getElementById('requestStartDate').value;
+            const endDate = document.getElementById('requestEndDate').value;
+            const type = document.getElementById('requestType').value;
+            const notes = document.getElementById('requestNotes').value;
+            
+            if (!startDate || !endDate || !type) {
+                alert('Please fill in all required fields');
+                return;
+            }
+            
+            if (new Date(endDate) < new Date(startDate)) {
+                alert('End date cannot be before start date');
+                return;
+            }
+            
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            const diffTime = Math.abs(end - start);
+            const days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            
+            if (type === 'vacation' && days > currentUser.vacationDays) {
+                alert(`Insufficient vacation days. You have ${currentUser.vacationDays} days available.`);
+                return;
+            }
+            
+            if (type === 'sick' && days > currentUser.sickDays) {
+                alert(`Insufficient sick leave days. You have ${currentUser.sickDays} days available.`);
+                return;
+            }
+            
+            // Update request
+            request.startDate = startDate;
+            request.endDate = endDate;
+            request.type = type;
+            request.days = days;
+            request.notes = notes;
+            
+            saveData();
+            cancelEdit();
+            alert('Request updated successfully!');
+            showEmployeeDashboard();
+        }
+
+        function deleteRequest(requestId) {
+            if (!confirm('Are you sure you want to delete this request?')) return;
+            
+            const index = requests.findIndex(r => r.id === requestId);
+            if (index !== -1) {
+                requests.splice(index, 1);
+                saveData();
+                showEmployeeDashboard();
+            }
+        }
+
+        // Check for pending requests that need reminders (call this periodically)
+        function checkPendingReminders() {
+            const twoDaysAgo = new Date();
+            twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+            const twoDaysAgoStr = twoDaysAgo.toISOString().split('T')[0];
+            
+            const oldPendingRequests = requests.filter(r => 
+                r.status === 'pending' && r.submittedDate <= twoDaysAgoStr
+            );
+            
+            // In a real app, this would send reminder emails
+            // For now, just log
+            if (oldPendingRequests.length > 0) {
+                console.log(`${oldPendingRequests.length} pending requests need attention`);
+            }
+        }
     </script>
 </body>
 </html>
