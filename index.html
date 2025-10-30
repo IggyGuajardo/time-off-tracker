@@ -308,22 +308,22 @@
             }
 
             .request-table td {
-                display: block;
-                text-align: right;
-                padding: 10px 8px;
+                display: flex;
+                align-items: flex-start;
+                justify-content: space-between;
+                padding: 12px;
                 border-bottom: 1px solid #f0f0f0;
-                position: relative;
-                padding-left: 50%;
-                min-height: 40px;
+                min-height: 45px;
+                text-align: left;
             }
 
             .request-table td:before {
                 content: attr(data-label);
-                position: absolute;
-                left: 10px;
                 font-weight: 600;
+                margin-right: 15px;
+                flex-shrink: 0;
+                width: 35%;
                 text-align: left;
-                top: 12px;
             }
 
             .request-table td:last-child {
@@ -333,30 +333,28 @@
             /* Action buttons cell styling */
             .request-table td[data-label="Actions"],
             .request-table td[data-label="Action"] {
-                padding: 15px 8px;
-                text-align: right;
-                display: block;
-                min-height: auto;
+                display: flex;
+                flex-direction: column;
+                align-items: stretch;
+                padding: 12px;
             }
 
             .request-table td[data-label="Actions"]:before,
             .request-table td[data-label="Action"]:before {
                 content: attr(data-label);
-                position: absolute;
-                left: 10px;
                 font-weight: 600;
+                margin-bottom: 10px;
+                width: 100%;
                 text-align: left;
-                top: 18px;
             }
 
             /* All action buttons */
             .request-table td button {
-                font-size: 13px;
+                font-size: 14px;
                 padding: 10px 16px;
                 display: block;
                 width: 100%;
-                max-width: 180px;
-                margin: 5px 0 5px auto;
+                margin: 5px 0;
                 white-space: nowrap;
             }
 
@@ -496,10 +494,8 @@
             /* Fix status badges from extending out */
             .status {
                 display: inline-block;
-                max-width: 100%;
                 padding: 5px 10px;
-                word-wrap: break-word;
-                white-space: normal;
+                white-space: nowrap;
             }
         }
 
@@ -1799,7 +1795,6 @@
     </script>
 </body>
 </html>
-
 
 
 
