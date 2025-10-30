@@ -403,8 +403,8 @@
         }
 
         .calendar-event {
-            background: #7fc8ed;
-            color: white;
+            background: #d4edda;
+            color: #155724;
             font-size: 11px;
             padding: 2px 5px;
             border-radius: 3px;
@@ -412,10 +412,42 @@
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
+            font-weight: 600;
         }
 
-        .calendar-event.sick {
-            background: #ff9999;
+        .calendar-event.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .calendar-legend {
+            display: flex;
+            gap: 20px;
+            margin-top: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 3px;
+        }
+
+        .legend-color.approved {
+            background: #d4edda;
+            border: 1px solid #155724;
+        }
+
+        .legend-color.pending {
+            background: #fff3cd;
+            border: 1px solid #856404;
         }
 
         .tab-buttons {
@@ -692,6 +724,16 @@
                                 <button onclick="nextMonth()">Next &rarr;</button>
                             </div>
                             <div class="calendar-grid" id="calendarGrid"></div>
+                            <div class="calendar-legend">
+                                <div class="legend-item">
+                                    <div class="legend-color approved"></div>
+                                    <span>Approved (Vacation & Sick Leave)</span>
+                                </div>
+                                <div class="legend-item">
+                                    <div class="legend-color pending"></div>
+                                    <span>Pending Request</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1426,8 +1468,10 @@
                     <div class="calendar-day-number">${day}</div>`;
                 
                 events.forEach(event => {
-                    const eventClass = event.type === 'vacation' ? '' : 'sick';
-                    html += `<div class="calendar-event ${eventClass}" title="${event.name} - ${event.type}">${event.name}</div>`;
+                    const eventClass = event.status === 'pending' ? 'pending' : '';
+                    const statusLabel = event.status === 'pending' ? ' (Pending)' : '';
+                    const typeLabel = event.type === 'vacation' ? 'Vacation' : 'Sick Leave';
+                    html += `<div class="calendar-event ${eventClass}" title="${event.name} - ${typeLabel}${statusLabel}">${event.name}${statusLabel}</div>`;
                 });
                 
                 html += `</div>`;
@@ -1450,7 +1494,8 @@
             const targetDate = new Date(dateStr + 'T00:00:00');
             
             requests.forEach(request => {
-                if (request.status === 'approved') {
+                // Show both approved and pending requests
+                if (request.status === 'approved' || request.status === 'pending') {
                     const startDate = new Date(request.startDate + 'T00:00:00');
                     const endDate = new Date(request.endDate + 'T00:00:00');
                     
@@ -1459,7 +1504,8 @@
                         if (user) {
                             events.push({
                                 name: user.name,
-                                type: request.type
+                                type: request.type,
+                                status: request.status
                             });
                         }
                     }
