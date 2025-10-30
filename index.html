@@ -275,9 +275,14 @@
         }
 
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
             .container {
-                margin: 10px;
+                margin: 0;
                 max-width: 100%;
+                box-sizing: border-box;
             }
 
             .balance-cards {
@@ -352,12 +357,60 @@
                 width: 48%;
                 display: inline-block;
                 margin: 2px 1%;
+                font-size: 13px;
+                padding: 8px 5px;
+                white-space: nowrap;
+                overflow: visible;
             }
 
             .edit-btn {
                 width: 48%;
                 display: inline-block;
                 margin: 2px 1%;
+                font-size: 13px;
+                padding: 8px 5px;
+                white-space: nowrap;
+                overflow: visible;
+            }
+
+            .btn-deny, .cancel-edit-btn {
+                font-size: 13px;
+                padding: 8px 5px;
+            }
+
+            /* Fix date input cutoff */
+            input[type="date"] {
+                font-size: 14px;
+                padding: 10px;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            /* Ensure form groups don't overflow */
+            .form-group {
+                margin-bottom: 15px;
+                width: 100%;
+                overflow: visible;
+            }
+
+            /* Fix request table action buttons */
+            .request-table td {
+                display: block;
+                text-align: right;
+                padding: 8px;
+                border-bottom: 1px solid #f0f0f0;
+                position: relative;
+                padding-left: 50%;
+                overflow: visible;
+                white-space: normal;
+            }
+
+            .request-table button {
+                font-size: 12px;
+                padding: 6px 10px;
+                width: 48%;
+                margin: 2px 1%;
+                display: inline-block;
             }
 
             /* Calendar mobile fixes */
@@ -428,6 +481,29 @@
 
             .content {
                 padding: 15px;
+                width: 100%;
+                box-sizing: border-box;
+                overflow-x: hidden;
+            }
+
+            /* Make sure sections don't overflow */
+            .section {
+                width: 100%;
+                overflow-x: hidden;
+                margin-bottom: 30px;
+            }
+
+            /* Fix balance cards on mobile */
+            .balance-card {
+                padding: 15px;
+                margin-bottom: 10px;
+            }
+
+            /* Ensure all inputs are properly sized */
+            input, select, textarea {
+                width: 100%;
+                box-sizing: border-box;
+                font-size: 14px;
             }
         }
 
@@ -845,7 +921,7 @@
 
         // AUTHORIZED ADMIN EMAILS - Only these emails can register as admin
         const AUTHORIZED_ADMIN_EMAILS = [
-            'iggy.reemo@gmail.com',
+            'admin@reemo.com',
             'hr@reemo.com',
             'manager@reemo.com'
             // Add more authorized admin emails here
@@ -1727,6 +1803,7 @@
     </script>
 </body>
 </html>
+
 
 
 
